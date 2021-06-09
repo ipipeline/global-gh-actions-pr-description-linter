@@ -33,6 +33,7 @@ async function run(): Promise<void> {
         core.debug(
           `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
         )
+        return
       }
     }
 
@@ -109,12 +110,14 @@ async function dismissReview(pullRequest: {
     pull_number: pullRequest.number
   })
 
-  for (let i = 0; i < reviews.data.length; i++) {
-    const review = reviews.data[i]
+  core.debug(`found: ${reviews.data.length} reviews`)
+
+  for (const review of reviews.data) {
     if (
       isGitHubActionUser(review.user?.login) &&
       alreadyRequiredChanges(review.state)
     ) {
+      core.debug(`dismissing review: ${review.id}`)
       void githubClient.pulls.dismissReview({
         owner: pullRequest.owner,
         repo: pullRequest.repo,
@@ -127,10 +130,12 @@ async function dismissReview(pullRequest: {
 }
 
 function isGitHubActionUser(login: string | undefined): boolean {
+  core.debug(`login: ${login}`)
   return login === 'github-actions[bot]'
 }
 
 function alreadyRequiredChanges(state: string): boolean {
+  core.debug(`state: ${state}`)
   return state === 'CHANGES_REQUESTED'
 }
 

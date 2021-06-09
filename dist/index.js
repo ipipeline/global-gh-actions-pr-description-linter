@@ -62,6 +62,7 @@ function run() {
                 const regexp = new RegExp(whiteListedAuthorsPattern);
                 if (regexp.test(prAuthor)) {
                     core.debug(`⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`);
+                    return;
                 }
             }
             core.info(`PR Description- ${pr.body}`);
@@ -119,10 +120,11 @@ function dismissReview(pullRequest) {
             repo: pullRequest.repo,
             pull_number: pullRequest.number
         });
-        for (let i = 0; i < reviews.data.length; i++) {
-            const review = reviews.data[i];
+        core.debug(`found: ${reviews.data.length} reviews`);
+        for (const review of reviews.data) {
             if (isGitHubActionUser((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) &&
                 alreadyRequiredChanges(review.state)) {
+                core.debug(`dismissing review: ${review.id}`);
                 void githubClient.pulls.dismissReview({
                     owner: pullRequest.owner,
                     repo: pullRequest.repo,
@@ -135,9 +137,11 @@ function dismissReview(pullRequest) {
     });
 }
 function isGitHubActionUser(login) {
+    core.debug(`login: ${login}`);
     return login === 'github-actions[bot]';
 }
 function alreadyRequiredChanges(state) {
+    core.debug(`state: ${state}`);
     return state === 'CHANGES_REQUESTED';
 }
 run();
@@ -205,9 +209,18 @@ class PrBodyValidationService {
                     return prBody.includes(item);
                 });
                 if (arePlaceholdersIncomplete) {
+                    let placeholderValidationMessage = '';
+                    for (const placeholder of this.placeholderItems) {
+                        const regEx = new RegExp(placeholder, 'g');
+                        const placeholderCount = (prBody.match(regEx) || []).length;
+                        if (placeholderValidationMessage.length > 0) {
+                            placeholderValidationMessage += ' | ';
+                        }
+                        placeholderValidationMessage += `${placeholder} found ${placeholderCount} time(s)`;
+                    }
                     resolve({
                         isPrBodyComplete: false,
-                        message: `Please complete all placeholders: ${this.placeholderItems.toString()} 🚫`
+                        message: `Please complete all placeholders: ${placeholderValidationMessage} 🚫`
                     });
                     return;
                 }

@@ -5,8 +5,20 @@ var prBodyValidationService: PrBodyValidationService
 const prBodyEmpty: string = ''
 const prBodyJunk: string = `# Summary`
 
-const prBodySignedOffButWithPlaceholders: string = `# Summary
+const prBodySignedOffButWithOnePlaceholder: string = `# Summary
 **Describe the changes:**
+{{!!DETAILS GO HERE!!}}
+
+# Sign off
+- [x] **Author(s):** I have reviewed the Code Safety Guidelines
+- [x] **Reviewer(s):** I am signing off
+`
+
+const prBodySignedOffButWithTwoPlaceholders: string = `# Summary
+**Describe the changes:**
+{{!!DETAILS GO HERE!!}}
+
+**Something else:**
 {{!!DETAILS GO HERE!!}}
 
 # Sign off
@@ -46,9 +58,15 @@ var testCases = [
     isPrBodyCompleteExpected: false
   },
   {
-    title: 'A PR Description with placeholders should fail and return: ',
-    expectedMessagePrefix: 'Please complete all placeholders',
-    body: prBodySignedOffButWithPlaceholders,
+    title: 'A PR Description with one placeholder should fail and return: ',
+    expectedMessagePrefix: `Please complete all placeholders: {{!!DETAILS GO HERE!!}} found 1 time(s)`,
+    body: prBodySignedOffButWithOnePlaceholder,
+    isPrBodyCompleteExpected: false
+  },
+  {
+    title: 'A PR Description with two placeholders should fail and return: ',
+    expectedMessagePrefix: `Please complete all placeholders: {{!!DETAILS GO HERE!!}} found 2 time(s)`,
+    body: prBodySignedOffButWithTwoPlaceholders,
     isPrBodyCompleteExpected: false
   },
   {

@@ -31,9 +31,21 @@ export class PrBodyValidationService {
       })
 
       if (arePlaceholdersIncomplete) {
+        let placeholderValidationMessage = ''
+
+        for (const placeholder of this.placeholderItems) {
+          const regEx = new RegExp(placeholder, 'g')
+          const placeholderCount = (prBody.match(regEx) || []).length
+
+          if (placeholderValidationMessage.length > 0) {
+            placeholderValidationMessage += ' | '
+          }
+          placeholderValidationMessage += `${placeholder} found ${placeholderCount} time(s)`
+        }
+
         resolve({
           isPrBodyComplete: false,
-          message: `Please complete all placeholders: ${this.placeholderItems.toString()} 🚫`
+          message: `Please complete all placeholders: ${placeholderValidationMessage} 🚫`
         })
         return
       }
