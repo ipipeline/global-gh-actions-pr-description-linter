@@ -9,6 +9,13 @@ Use this action to validate the body of your pull requests.
 - Enforce author(s) and reviewer(s) to sign off against your quality measures such as your definition of done
 
 ## Pre-requisites
+
+### Branch Protection Rules
+Protect the main/master branch by requiting a status check on the "A job to check the PR description" job to pass before merging
+![image](https://user-images.githubusercontent.com/5638263/121352180-7d1d2600-c924-11eb-98dd-0ef44530f865.png)
+
+
+### Pull Request Template(s)
 It is highly recommended to use this GitHub Action in-conjunction with a Pull Request Template. An example called "pull_request_template.md" can be found in docs/pull_request_template.md of this repo!.
 
 In order to be compatible with this GitHub Action, the PR Template must contain the following values: 
