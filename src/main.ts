@@ -70,11 +70,13 @@ async function run(): Promise<void> {
       )
       dismissReview(issue)
     } else {
-      core.setOutput(
-        `responseMessage`,
-        `🚧 PR Body incomplete: ${result.message}`
-      )
+      const failedMessage = `🚧 PR Body incomplete: ${result.message}`
+
+      core.setOutput(`responseMessage`, failedMessage)
       createReview(result.message, issue)
+
+      core.setFailed(failedMessage)
+      return
     }
 
     core.debug(new Date().toTimeString())
