@@ -19,7 +19,7 @@ async function run(): Promise<void> {
       return
     }
 
-    core.debug(`PR body: ${pr.body}`)
+    core.info(`PR body: ${pr.body}`)
 
     const prBodyValidationService = new PrBodyValidationService()
     const result = await prBodyValidationService.validateBody(pr.body)
@@ -37,13 +37,12 @@ async function run(): Promise<void> {
     core.debug(`prOwner: ${prOwner}`)
 
     const p2 = github.context.payload.pull_request
-    if (!p2) {
-      return undefined
-    }
-
-    const prOwner2 = p2.user.login;
-    core.debug(`prOwner2: ${prOwner}`)
-    
+    if (p2) {
+      const prOwner2 = p2.user.login;
+      core.debug(`prOwner2: ${prOwner}`)
+    } else {
+      core.debug(`p2 undefined`)
+    }   
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
