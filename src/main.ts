@@ -22,6 +22,16 @@ async function run(): Promise<void> {
       return
     }
 
+    // Get owner and repo from context
+    const repo = github.context.repo.repo
+    const repoOwner = github.context.repo.owner
+    const issue = github.context.issue
+    const issueOwner = github.context.issue.owner
+
+    core.debug(`repo: ${repo}`)
+    core.debug(`repoOwner: ${repoOwner}`)
+    core.debug(`issueOwner: ${issueOwner}`)
+
     const prAuthor = pr.user.login
     core.debug(`prAuthor: ${prAuthor}`)
 
@@ -30,9 +40,21 @@ async function run(): Promise<void> {
 
       const regexp = new RegExp(whiteListedAuthorsPattern)
       if (regexp.test(prAuthor)) {
-        core.debug(
-          `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
-        )
+        const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
+        core.debug(responseMessage)
+
+        const response = await githubClient.issues.createComment({
+          owner: repoOwner,
+          repo,
+          issue_number: pr.number,
+          body: responseMessage
+        })
+
+        core.debug(`created comment URL: ${response.data.html_url}`)
+        core.setOutput(`comment-url`, response.data.html_url)
+        core.setOutput(`responseMessage`, responseMessage)
+        dismissReview(issue)
+
         return
       }
     }
@@ -41,18 +63,6 @@ async function run(): Promise<void> {
 
     const prBodyValidationService = new PrBodyValidationService()
     const result = await prBodyValidationService.validateBody(pr.body)
-
-    // Get owner and repo from context
-    const repo = github.context.repo.repo
-    const repoOwner = github.context.repo.owner
-
-    const issue = github.context.issue
-
-    const issueOwner = github.context.issue.owner
-
-    core.debug(`repo: ${repo}`)
-    core.debug(`repoOwner: ${repoOwner}`)
-    core.debug(`issueOwner: ${issueOwner}`)
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {

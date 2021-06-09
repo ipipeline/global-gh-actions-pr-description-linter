@@ -55,19 +55,6 @@ function run() {
                 core.setFailed(`github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`);
                 return;
             }
-            const prAuthor = pr.user.login;
-            core.debug(`prAuthor: ${prAuthor}`);
-            if (whiteListedAuthorsPattern) {
-                core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`);
-                const regexp = new RegExp(whiteListedAuthorsPattern);
-                if (regexp.test(prAuthor)) {
-                    core.debug(`⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`);
-                    return;
-                }
-            }
-            core.info(`PR Description- ${pr.body}`);
-            const prBodyValidationService = new pr_body_validation_service_1.PrBodyValidationService();
-            const result = yield prBodyValidationService.validateBody(pr.body);
             // Get owner and repo from context
             const repo = github.context.repo.repo;
             const repoOwner = github.context.repo.owner;
@@ -76,6 +63,30 @@ function run() {
             core.debug(`repo: ${repo}`);
             core.debug(`repoOwner: ${repoOwner}`);
             core.debug(`issueOwner: ${issueOwner}`);
+            const prAuthor = pr.user.login;
+            core.debug(`prAuthor: ${prAuthor}`);
+            if (whiteListedAuthorsPattern) {
+                core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`);
+                const regexp = new RegExp(whiteListedAuthorsPattern);
+                if (regexp.test(prAuthor)) {
+                    const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`;
+                    core.debug(responseMessage);
+                    const response = yield githubClient.issues.createComment({
+                        owner: repoOwner,
+                        repo,
+                        issue_number: pr.number,
+                        body: responseMessage
+                    });
+                    core.debug(`created comment URL: ${response.data.html_url}`);
+                    core.setOutput(`comment-url`, response.data.html_url);
+                    core.setOutput(`responseMessage`, responseMessage);
+                    dismissReview(issue);
+                    return;
+                }
+            }
+            core.info(`PR Description- ${pr.body}`);
+            const prBodyValidationService = new pr_body_validation_service_1.PrBodyValidationService();
+            const result = yield prBodyValidationService.validateBody(pr.body);
             // Create a comment on PR
             if (result.isPrBodyComplete) {
                 const response = yield githubClient.issues.createComment({
