@@ -1,0 +1,1 @@
+# global-bh-actions-pr-description-linter
