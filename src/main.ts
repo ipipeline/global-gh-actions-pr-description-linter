@@ -25,14 +25,30 @@ async function run(): Promise<void> {
     const result = await prBodyValidationService.validateBody(pr.body)
 
     // Get owner and repo from context
-    const owner = github.context.repo.owner
     const repo = github.context.repo.repo
+    const repoOwner = github.context.repo.owner
+    
     const pullRequest = github.context.issue
+
+    const prOwner = github.context.issue.owner
+
+    core.debug(`repo: ${repo}`)
+    core.debug(`repoOwner: ${repoOwner}`)
+    core.debug(`prOwner: ${prOwner}`)
+
+    const p2 = github.context.payload.pull_request
+    if (!p2) {
+      return undefined
+    }
+
+    const prOwner2 = p2.user.login;
+    core.debug(`prOwner2: ${prOwner}`)
+    
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
       const response = await githubClient.issues.createComment({
-        owner,
+        owner: repoOwner,
         repo,
         issue_number: pr.number,
         body: result.message
