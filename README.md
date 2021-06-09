@@ -10,11 +10,6 @@ Use this action to validate the body of your pull requests.
 
 ## Pre-requisites
 
-### Branch Protection Rules
-Protect the main/master branch by requiting a status check on the "A job to check the PR description" job to pass before merging
-![image](https://user-images.githubusercontent.com/5638263/121352180-7d1d2600-c924-11eb-98dd-0ef44530f865.png)
-
-
 ### Pull Request Template(s)
 It is highly recommended to use this GitHub Action in-conjunction with a Pull Request Template. An example called "pull_request_template.md" can be found in docs/pull_request_template.md of this repo!.
 
@@ -31,6 +26,11 @@ This is a placeholder to prompt authors/reviewers to complete a given section of
 
 The GitHub action will fail until these checkboxes are found in the description and have been accepted. 
 Note: There is nothing to prevent anyone checking the boxes but it is designed to be checked by the author(s) and reviewer(s)
+
+## Branch Protection Rules
+Once the GitHub Action has been setup and has been used, protect the main/master branch by requesting a status check on the job called "A job to check the PR description" to ensure merging is preventing if actions are required:
+
+![image](https://user-images.githubusercontent.com/5638263/121352180-7d1d2600-c924-11eb-98dd-0ef44530f865.png)
 
 ## Usage
 
@@ -63,6 +63,7 @@ jobs:
 ```
 
 :rocket: See the [actions tab](https://github.com/ipipeline/global-gh-actions-pr-description-linter/actions) for runs of this action! 
+
 
 
 
