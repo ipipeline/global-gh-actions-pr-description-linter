@@ -7,7 +7,6 @@ inputs:
   whitelisted-authors-pattern:
     required: false
     description: 'The PR Description checks will be skipped for authors matching this regular expression pattern (e.g. used for automated PR's from renovate)'
-    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
