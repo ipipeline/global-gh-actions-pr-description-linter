@@ -48,6 +48,7 @@ jobs:
       uses: ipipeline/global-gh-actions-pr-description-linter@main
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        whitelisted-authors-pattern: author names # Optional value to skip checks based on author name(s) (e.g. for automated PR's from renovate)
 
     # Optional step - use the output from the `prlint` step to do something else? This example just echos the message to screen
     - name: 🖋 Get the output response message

@@ -18,7 +18,6 @@ jobs:
       uses: ipipeline/global-gh-actions-pr-description-linter@main
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        whitelisted-authors-pattern: craigbroadman
 
     # Optional step - use the output from the `prlint` step to do something else?
     - name: 🖋 Get the output response message
