@@ -1,5 +1,6 @@
 <p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/ipipeline/global-gh-actions-pr-description-linter#global-gh-actions-pr-description-linter/workflows/build-test/badge.svg"></a>
+  <a href="https://github.com/ipipeline/global-gh-actions-pr-description-linter/actions/workflows/build-test.yml">
+    <img alt="Build/Test status" src="https://github.com/ipipeline/global-gh-actions-pr-description-linter/workflows/build-test/badge.svg"></a>
 </p>
 
 # Description
@@ -18,6 +19,7 @@ This is a placeholder to prompt authors/reviewers to complete a given section of
 
 ### Checkboxes for sign off
 `- [] **Author(s):**`
+
 `- [] **Reviewer(s):**`
 
 The GitHub action will fail until these checkboxes are found in the description and have been accepted. 
