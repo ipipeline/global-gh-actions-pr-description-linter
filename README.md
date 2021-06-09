@@ -37,6 +37,11 @@ jobs:
   pr_description_lint:
     runs-on: ubuntu-latest
     name: A job to check the PR description
+
+    concurrency: # ensure only one job is running at a time
+      group: ${{ github.head_ref }} 
+      cancel-in-progress: true
+
     steps:
     - name: ✅ PR Description Linter
       id: prlint
