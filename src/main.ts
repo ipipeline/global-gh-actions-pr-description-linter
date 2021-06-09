@@ -27,7 +27,7 @@ async function run(): Promise<void> {
     // Get owner and repo from context
     const repo = github.context.repo.repo
     const repoOwner = github.context.repo.owner
-    
+
     const pullRequest = github.context.issue
 
     const prOwner = github.context.issue.owner
@@ -38,11 +38,11 @@ async function run(): Promise<void> {
 
     const p2 = github.context.payload.pull_request
     if (p2) {
-      const prOwner2 = p2.user.login;
-      core.debug(`prOwner2: ${prOwner}`)
+      const prOwner2 = p2.user.login
+      core.debug(`prOwner2: ${prOwner2}`)
     } else {
       core.debug(`p2 undefined`)
-    }   
+    }
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
