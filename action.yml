@@ -4,10 +4,10 @@ author: 'craigbroadman'
 inputs:
   repo-token:
     description: 'Token with permissions to do repo things'
-  message:
+  whitelisted-authors-pattern:
     required: false
-    description: 'A comment to add to the PR'
-    default: 'Pull Request Description checks have passed. Nice work 👍'
+    description: 'The PR Description checks will be skipped for authors matching this regular expression pattern (e.g. used for automated PR's from renovate)'
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
