@@ -1,0 +1,13 @@
+name: 'Lint PR Description'
+description: 'Ensures the PR Description has been completed correctly'
+author: 'craigbroadman'
+inputs:
+  repo-token:
+    description: 'Token with permissions to do repo things'
+  message:
+    required: false
+    description: 'A comment to add to the PR'
+    default: 'Pull Request Description checks have passed. Nice work 👍'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

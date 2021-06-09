@@ -1,0 +1,20 @@
+name: 'pr-description-linter'
+
+on: # rebuild any PRs and main branch changes
+  pull_request_target:
+    types: [opened, edited, reopened]
+jobs:
+  pr_description_lint:
+    runs-on: ubuntu-latest
+    name: A job to check the PR description
+    steps:
+
+    - name: ✅ PR Description Linter
+      id: prlint
+      uses: ipipeline/global-gh-actions-pr-description-linter@main
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Optional step - use the output from the `prlint` step to do something else?
+    - name: 🖋 Get the output response message
+      run: echo "Response- ${{ steps.prlint.outputs.responseMessage }}"
