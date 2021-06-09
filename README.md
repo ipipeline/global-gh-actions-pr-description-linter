@@ -54,7 +54,7 @@ jobs:
       run: echo "Response- ${{ steps.prlint.outputs.responseMessage }}"
 ```
 
-See the [actions tab](https://github.com/ipipeline/global-gh-actions-pr-description-linter/actions) for runs of this action! :rocket:
+:rocket: See the [actions tab](https://github.com/ipipeline/global-gh-actions-pr-description-linter/actions) for runs of this action! 
 
 
 
