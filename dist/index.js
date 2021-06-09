@@ -40,6 +40,9 @@ const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
 const pr_body_validation_service_1 = __webpack_require__(812);
 const repoTokenInput = core.getInput('repo-token', { required: true });
+const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
+    required: false
+});
 const githubClient = github.getOctokit(repoTokenInput);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -52,25 +55,26 @@ function run() {
                 core.setFailed(`github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`);
                 return;
             }
+            const prAuthor = pr.user.login;
+            core.debug(`prAuthor: ${prAuthor}`);
+            if (whiteListedAuthorsPattern) {
+                core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`);
+                const regexp = new RegExp(whiteListedAuthorsPattern);
+                if (regexp.test(prAuthor)) {
+                    core.debug(`⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`);
+                }
+            }
             core.info(`PR body- ${pr.body}`);
             const prBodyValidationService = new pr_body_validation_service_1.PrBodyValidationService();
             const result = yield prBodyValidationService.validateBody(pr.body);
             // Get owner and repo from context
             const repo = github.context.repo.repo;
             const repoOwner = github.context.repo.owner;
-            const pullRequest = github.context.issue;
-            const prOwner = github.context.issue.owner;
+            const issue = github.context.issue;
+            const issueOwner = github.context.issue.owner;
             core.debug(`repo: ${repo}`);
             core.debug(`repoOwner: ${repoOwner}`);
-            core.debug(`prOwner: ${prOwner}`);
-            const p2 = github.context.payload.pull_request;
-            if (p2) {
-                const prOwner2 = p2.user.login;
-                core.debug(`prOwner2: ${prOwner2}`);
-            }
-            else {
-                core.debug(`p2 undefined`);
-            }
+            core.debug(`issueOwner: ${issueOwner}`);
             // Create a comment on PR
             if (result.isPrBodyComplete) {
                 const response = yield githubClient.issues.createComment({
@@ -82,11 +86,11 @@ function run() {
                 core.debug(`created comment URL: ${response.data.html_url}`);
                 core.setOutput(`comment-url`, response.data.html_url);
                 core.setOutput(`responseMessage`, `✅ All checks passed: ${result.message}`);
-                dismissReview(pullRequest);
+                dismissReview(issue);
             }
             else {
                 core.setOutput(`responseMessage`, `🚧 PR Body incomplete: ${result.message}`);
-                createReview(result.message, pullRequest);
+                createReview(result.message, issue);
             }
             core.debug(new Date().toTimeString());
         }

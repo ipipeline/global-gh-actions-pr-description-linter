@@ -3,6 +3,9 @@ import * as github from '@actions/github'
 import {PrBodyValidationService} from './pr-body-validation.service'
 
 const repoTokenInput = core.getInput('repo-token', {required: true})
+const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
+  required: false
+})
 const githubClient = github.getOctokit(repoTokenInput)
 
 async function run(): Promise<void> {
@@ -19,6 +22,20 @@ async function run(): Promise<void> {
       return
     }
 
+    const prAuthor = pr.user.login
+    core.debug(`prAuthor: ${prAuthor}`)
+
+    if (whiteListedAuthorsPattern) {
+      core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`)
+
+      const regexp = new RegExp(whiteListedAuthorsPattern)
+      if (regexp.test(prAuthor)) {
+        core.debug(
+          `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
+        )
+      }
+    }
+
     core.info(`PR body- ${pr.body}`)
 
     const prBodyValidationService = new PrBodyValidationService()
@@ -28,21 +45,13 @@ async function run(): Promise<void> {
     const repo = github.context.repo.repo
     const repoOwner = github.context.repo.owner
 
-    const pullRequest = github.context.issue
+    const issue = github.context.issue
 
-    const prOwner = github.context.issue.owner
+    const issueOwner = github.context.issue.owner
 
     core.debug(`repo: ${repo}`)
     core.debug(`repoOwner: ${repoOwner}`)
-    core.debug(`prOwner: ${prOwner}`)
-
-    const p2 = github.context.payload.pull_request
-    if (p2) {
-      const prOwner2 = p2.user.login
-      core.debug(`prOwner2: ${prOwner2}`)
-    } else {
-      core.debug(`p2 undefined`)
-    }
+    core.debug(`issueOwner: ${issueOwner}`)
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
@@ -59,13 +68,13 @@ async function run(): Promise<void> {
         `responseMessage`,
         `✅ All checks passed: ${result.message}`
       )
-      dismissReview(pullRequest)
+      dismissReview(issue)
     } else {
       core.setOutput(
         `responseMessage`,
         `🚧 PR Body incomplete: ${result.message}`
       )
-      createReview(result.message, pullRequest)
+      createReview(result.message, issue)
     }
 
     core.debug(new Date().toTimeString())
