@@ -52,17 +52,29 @@ function run() {
                 core.setFailed(`github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`);
                 return;
             }
-            core.debug(`PR body: ${pr.body}`);
+            core.info(`PR body- ${pr.body}`);
             const prBodyValidationService = new pr_body_validation_service_1.PrBodyValidationService();
             const result = yield prBodyValidationService.validateBody(pr.body);
             // Get owner and repo from context
-            const owner = github.context.repo.owner;
             const repo = github.context.repo.repo;
+            const repoOwner = github.context.repo.owner;
             const pullRequest = github.context.issue;
+            const prOwner = github.context.issue.owner;
+            core.debug(`repo: ${repo}`);
+            core.debug(`repoOwner: ${repoOwner}`);
+            core.debug(`prOwner: ${prOwner}`);
+            const p2 = github.context.payload.pull_request;
+            if (p2) {
+                const prOwner2 = p2.user.login;
+                core.debug(`prOwner2: ${prOwner2}`);
+            }
+            else {
+                core.debug(`p2 undefined`);
+            }
             // Create a comment on PR
             if (result.isPrBodyComplete) {
                 const response = yield githubClient.issues.createComment({
-                    owner,
+                    owner: repoOwner,
                     repo,
                     issue_number: pr.number,
                     body: result.message
