@@ -1,1 +1,1 @@
-# global-bh-actions-pr-description-linter
+# global-gh-actions-pr-description-linter
