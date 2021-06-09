@@ -6,7 +6,7 @@ on: # rebuild any PRs and main branch changes
 jobs:
   pr_description_lint:
     runs-on: ubuntu-latest
-    name: A job to check the PR description
+    name: Validate all details have been completed on the pull request description
 
     concurrency: # ensure only one job is running at a time
       group: ${{ github.head_ref }} 

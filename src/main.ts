@@ -36,7 +36,7 @@ async function run(): Promise<void> {
       }
     }
 
-    core.info(`PR body- ${pr.body}`)
+    core.info(`PR Description- ${pr.body}`)
 
     const prBodyValidationService = new PrBodyValidationService()
     const result = await prBodyValidationService.validateBody(pr.body)
@@ -70,7 +70,7 @@ async function run(): Promise<void> {
       )
       dismissReview(issue)
     } else {
-      const failedMessage = `🚧 PR Body incomplete: ${result.message}`
+      const failedMessage = `🚧 PR Description incomplete: ${result.message}`
 
       core.setOutput(`responseMessage`, failedMessage)
       createReview(result.message, issue)

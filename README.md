@@ -17,7 +17,7 @@ In order to be compatible with this GitHub Action, the PR Template must contain 
 ### Placeholders for additional details
 `{{!!DETAILS GO HERE!!}}`
 
-This is a placeholder to prompt authors/reviewers to complete a given section of the PR Body. The GitHub action will fail until no further placeholders are found.
+This is a placeholder to prompt authors/reviewers to complete a given section of the PR Description. The GitHub action will fail until no further placeholders are found.
 
 ### Checkboxes for sign off
 `- [] **Author(s):**`
@@ -28,7 +28,7 @@ The GitHub action will fail until these checkboxes are found in the description 
 Note: There is nothing to prevent anyone checking the boxes but it is designed to be checked by the author(s) and reviewer(s)
 
 ## Branch Protection Rules
-Once the GitHub Action has been setup and has been used, protect the main/master branch by requesting a status check on the job called "A job to check the PR description" to ensure merging is preventing if actions are required:
+Once the GitHub Action has been setup and has been used, protect the main/master branch by requesting a status check on the job called "Validate all details have been completed on the pull request description" to ensure merging is preventing if actions are required:
 
 ![image](https://user-images.githubusercontent.com/5638263/121352180-7d1d2600-c924-11eb-98dd-0ef44530f865.png)
 
@@ -43,7 +43,7 @@ on: # rebuild any PRs and main branch changes
 jobs:
   pr_description_lint:
     runs-on: ubuntu-latest
-    name: A job to check the PR description
+    name: Validate all details have been completed on the pull request description
 
     concurrency: # ensure only one job is running at a time
       group: ${{ github.head_ref }} 

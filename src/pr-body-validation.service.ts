@@ -13,13 +13,13 @@ export class PrBodyValidationService {
     prBody: string | null | undefined
   ): Promise<IPrBodyValidationStatus> {
     return new Promise(resolve => {
-      core.debug(`Validating PR body: ${prBody}`)
+      core.debug(`Validating PR Description: ${prBody}`)
 
       // Should cater for undefined, null, empty
       if (!prBody || prBody.length < 1) {
         resolve({
           isPrBodyComplete: false,
-          message: `The PR Body is empty - do you have the pull request template setup (docs -> pull_request_template.md)? ❌`
+          message: `The PR Description is empty - do you have the pull request template setup (docs -> pull_request_template.md)? ❌`
         })
         return
       }
@@ -55,7 +55,7 @@ export class PrBodyValidationService {
       resolve({
         isPrBodyComplete: true,
         message: `Nice work 👍👍👍
-                    The PR Body has passed all of the validation checks ✅✅✅.
+                    The PR Description has passed all of the validation checks ✅✅✅.
                     The code can now be merged!`
       })
     })
