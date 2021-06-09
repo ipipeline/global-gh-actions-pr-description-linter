@@ -52,7 +52,7 @@ function run() {
                 core.setFailed(`github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`);
                 return;
             }
-            core.info(`PR body: ${pr.body}`);
+            core.info(`PR body- ${pr.body}`);
             const prBodyValidationService = new pr_body_validation_service_1.PrBodyValidationService();
             const result = yield prBodyValidationService.validateBody(pr.body);
             // Get owner and repo from context

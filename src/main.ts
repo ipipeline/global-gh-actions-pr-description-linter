@@ -19,7 +19,7 @@ async function run(): Promise<void> {
       return
     }
 
-    core.info(`PR body: ${pr.body}`)
+    core.info(`PR body- ${pr.body}`)
 
     const prBodyValidationService = new PrBodyValidationService()
     const result = await prBodyValidationService.validateBody(pr.body)
