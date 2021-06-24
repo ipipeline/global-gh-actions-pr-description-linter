@@ -4,9 +4,7 @@ import {IPrBodyValidationStatus} from './pr-body-validation-status.model'
 export class PrBodyValidationService {
   private placeholderItems: string[] = [`{{!!DETAILS GO HERE!!}}`]
 
-  private completedFinalChecklist: string[] = [
-    `- [x] **Author(s):**`
-  ]
+  private completedFinalChecklist: string[] = [`- [x] **Author(s):**`]
 
   async validateBody(
     prBody: string | null | undefined

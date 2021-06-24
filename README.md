@@ -6,7 +6,7 @@
 # Description
 Use this action to validate the body of your pull requests.
 - Use placeholders to ensure the author(s) and reviewer(s) are completing the sections you want completed
-- Enforce author(s) and reviewer(s) to sign off against your quality measures such as your definition of done
+- Enforce author(s) to sign off against your quality measures such as your definition of done
 
 ## Pre-requisites
 
@@ -22,10 +22,8 @@ This is a placeholder to prompt authors/reviewers to complete a given section of
 ### Checkboxes for sign off
 `- [] **Author(s):**`
 
-`- [] **Reviewer(s):**`
-
-The GitHub action will fail until these checkboxes are found in the description and have been accepted. 
-Note: There is nothing to prevent anyone checking the boxes but it is designed to be checked by the author(s) and reviewer(s)
+The GitHub action will fail until this checkbox has been found in the description and has been accepted. 
+Note: There is nothing to prevent anyone checking the box but it is designed to be checked by the author(s).
 
 ## Branch Protection Rules
 Once the GitHub Action has been setup and has been used, protect the main/master branch by requesting a status check on the job called "Validate all details have been completed on the pull request description" to ensure merging is preventing if actions are required:

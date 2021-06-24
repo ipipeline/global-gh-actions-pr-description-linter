@@ -199,10 +199,7 @@ const core = __importStar(__webpack_require__(186));
 class PrBodyValidationService {
     constructor() {
         this.placeholderItems = [`{{!!DETAILS GO HERE!!}}`];
-        this.completedFinalChecklist = [
-            `- [x] **Author(s):**`,
-            `- [x] **Reviewer(s):**`
-        ];
+        this.completedFinalChecklist = [`- [x] **Author(s):**`];
     }
     validateBody(prBody) {
         return __awaiter(this, void 0, void 0, function* () {
