@@ -5,8 +5,7 @@ export class PrBodyValidationService {
   private placeholderItems: string[] = [`{{!!DETAILS GO HERE!!}}`]
 
   private completedFinalChecklist: string[] = [
-    `- [x] **Author(s):**`,
-    `- [x] **Reviewer(s):**`
+    `- [x] **Author(s):**`
   ]
 
   async validateBody(
