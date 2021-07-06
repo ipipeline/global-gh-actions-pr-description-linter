@@ -11,7 +11,6 @@ const prBodySignedOffButWithOnePlaceholder: string = `# Summary
 
 # Sign off
 - [x] **Author(s):** I have reviewed the Code Safety Guidelines
-- [x] **Reviewer(s):** I am signing off
 `
 
 const prBodySignedOffButWithTwoPlaceholders: string = `# Summary
@@ -23,7 +22,6 @@ const prBodySignedOffButWithTwoPlaceholders: string = `# Summary
 
 # Sign off
 - [x] **Author(s):** I have reviewed the Code Safety Guidelines
-- [x] **Reviewer(s):** I am signing off
 `
 
 const prBodyNotSignedOffAndNoPlaceholders: string = `# Summary
@@ -32,7 +30,6 @@ This changes X, Y, Z
 
 # Sign off
 - [] **Author(s):** I have reviewed the Code Safety Guidelines
-- [] **Reviewer(s):** I am signing off
 `
 
 const prBodyComplete: string = `# Summary
@@ -41,7 +38,6 @@ This changes X, Y, Z
 
 # Sign off
 - [x] **Author(s):** I have reviewed the Code Safety Guidelines
-- [x] **Reviewer(s):** I am signing off
 `
 
 var testCases = [

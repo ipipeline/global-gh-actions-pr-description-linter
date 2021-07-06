@@ -41,7 +41,6 @@
 {{!!DETAILS GO HERE!!}}
 
 # 🏁 Sign off
-- [ ] **Author(s):** I have reviewed the [Code Safety Guidelines](https://tinyurl.com/y79wkekq), I am **99% sure** these changes are **safe to merge** and have explained the reasons why 
-- [ ] **Reviewer(s):** I am happy to sign off this pull request based on the above information
+- [ ] **Author(s):** I have reviewed the [Code Safety Guidelines](https://tinyurl.com/y79wkekq), I am **99% sure** these changes are **safe to merge** and have explained the reasons why
 
 **If you are unsure about any of the above information, speak to department/tech lead to discuss what other options are available to increase confidence**
