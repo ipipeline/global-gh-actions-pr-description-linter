@@ -13,7 +13,7 @@ Use this action to validate the body of your pull requests.
 ### Pull Request Template(s)
 It is highly recommended to use this GitHub Action in-conjunction with a Pull Request Template. An example called "pull_request_template.md" can be found in docs/pull_request_template.md of this repo!.
 
-In order to be compatible with this GitHub Action, the PR Template must contain the following values: 
+In order to be compatible with this GitHub Action, the PR Template must contain the following values:
 ### Placeholders for additional details
 `{{!!DETAILS GO HERE!!}}`
 
