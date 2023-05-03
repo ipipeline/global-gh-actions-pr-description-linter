@@ -40,9 +40,11 @@ export class PrBodyValidationService {
           placeholderValidationMessage += `${placeholder} found ${placeholderCount} time(s)`
         }
 
+        const placeholderMessage = `Please complete all placeholders: ${placeholderValidationMessage} 🚫`
+
         resolve({
           isPrBodyComplete: false,
-          message: `Please complete all placeholders: ${placeholderValidationMessage} 🚫`
+          message: placeholderMessage
         })
         return
       }

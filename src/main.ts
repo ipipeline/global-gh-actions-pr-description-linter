@@ -43,7 +43,7 @@ async function run(): Promise<void> {
         const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
         core.debug(responseMessage)
 
-        const response = await githubClient.issues.createComment({
+        const response = await githubClient.rest.issues.createComment({
           owner: repoOwner,
           repo,
           issue_number: pr.number,
@@ -66,7 +66,7 @@ async function run(): Promise<void> {
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
-      const response = await githubClient.issues.createComment({
+      const response = await githubClient.rest.issues.createComment({
         owner: repoOwner,
         repo,
         issue_number: pr.number,
@@ -91,8 +91,13 @@ async function run(): Promise<void> {
     }
 
     core.debug(new Date().toTimeString())
-  } catch (error) {
-    core.setFailed(error.message)
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    } else {
+      const errorMessage = `An unknown error occurred: ${JSON.stringify(error)}`
+      core.setFailed(errorMessage)
+    }
   }
 }
 
@@ -100,7 +105,7 @@ function createReview(
   comment: string,
   pullRequest: {owner: string; repo: string; number: number}
 ): void {
-  void githubClient.pulls.createReview({
+  void githubClient.rest.pulls.createReview({
     owner: pullRequest.owner,
     repo: pullRequest.repo,
     pull_number: pullRequest.number,
@@ -114,7 +119,7 @@ async function dismissReview(pullRequest: {
   repo: string
   number: number
 }): Promise<void> {
-  const reviews = await githubClient.pulls.listReviews({
+  const reviews = await githubClient.rest.pulls.listReviews({
     owner: pullRequest.owner,
     repo: pullRequest.repo,
     pull_number: pullRequest.number
@@ -128,7 +133,7 @@ async function dismissReview(pullRequest: {
       alreadyRequiredChanges(review.state)
     ) {
       core.debug(`dismissing review: ${review.id}`)
-      void githubClient.pulls.dismissReview({
+      void githubClient.rest.pulls.dismissReview({
         owner: pullRequest.owner,
         repo: pullRequest.repo,
         pull_number: pullRequest.number,
