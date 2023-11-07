@@ -44,7 +44,7 @@ const github = __importStar(__nccwpck_require__(5438));
 const pr_body_validation_service_1 = __nccwpck_require__(4812);
 const repoTokenInput = core.getInput('repo-token', { required: true });
 const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
-    required: false
+    required: false,
 });
 const githubClient = github.getOctokit(repoTokenInput);
 function run() {
@@ -78,12 +78,12 @@ function run() {
                         owner: repoOwner,
                         repo,
                         issue_number: pr.number,
-                        body: responseMessage
+                        body: responseMessage,
                     });
                     core.debug(`created comment URL: ${response.data.html_url}`);
                     core.setOutput(`comment-url`, response.data.html_url);
                     core.setOutput(`responseMessage`, responseMessage);
-                    dismissReview(issue);
+                    yield dismissReview(issue);
                     return;
                 }
             }
@@ -96,17 +96,17 @@ function run() {
                     owner: repoOwner,
                     repo,
                     issue_number: pr.number,
-                    body: result.message
+                    body: result.message,
                 });
                 core.debug(`created comment URL: ${response.data.html_url}`);
                 core.setOutput(`comment-url`, response.data.html_url);
                 core.setOutput(`responseMessage`, `✅ All checks passed: ${result.message}`);
-                dismissReview(issue);
+                yield dismissReview(issue);
             }
             else {
                 const failedMessage = `🚧 PR Description incomplete: ${result.message}`;
                 core.setOutput(`responseMessage`, failedMessage);
-                createReview(result.message, issue);
+                yield createOrUpdateReview(result.message, issue);
                 core.setFailed(failedMessage);
                 return;
             }
@@ -123,13 +123,35 @@ function run() {
         }
     });
 }
-function createReview(comment, pullRequest) {
-    void githubClient.rest.pulls.createReview({
-        owner: pullRequest.owner,
-        repo: pullRequest.repo,
-        pull_number: pullRequest.number,
-        body: comment,
-        event: 'REQUEST_CHANGES' // Could use "COMMENT"
+function createOrUpdateReview(comment, pullRequest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const reviews = yield githubClient.rest.pulls.listReviews({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: pullRequest.number,
+        });
+        const existingReview = reviews.data.find((review) => {
+            var _a;
+            return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) === github.context.actor;
+        });
+        if (existingReview) {
+            void githubClient.rest.pulls.updateReview({
+                owner: pullRequest.owner,
+                repo: pullRequest.repo,
+                pull_number: pullRequest.number,
+                review_id: existingReview.id,
+                body: comment,
+            });
+        }
+        else {
+            void githubClient.rest.pulls.createReview({
+                owner: pullRequest.owner,
+                repo: pullRequest.repo,
+                pull_number: pullRequest.number,
+                body: comment,
+                event: 'REQUEST_CHANGES', // Could use "COMMENT"
+            });
+        }
     });
 }
 function dismissReview(pullRequest) {
@@ -138,7 +160,7 @@ function dismissReview(pullRequest) {
         const reviews = yield githubClient.rest.pulls.listReviews({
             owner: pullRequest.owner,
             repo: pullRequest.repo,
-            pull_number: pullRequest.number
+            pull_number: pullRequest.number,
         });
         core.debug(`found: ${reviews.data.length} reviews`);
         for (const review of reviews.data) {
@@ -150,7 +172,7 @@ function dismissReview(pullRequest) {
                     repo: pullRequest.repo,
                     pull_number: pullRequest.number,
                     review_id: review.id,
-                    message: "All actions resolved, you're good to go ✅"
+                    message: "All actions resolved, you're good to go ✅",
                 });
             }
         }
@@ -216,13 +238,13 @@ class PrBodyValidationService {
     }
     validateBody(prBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 core.debug(`Validating PR Description: ${prBody}`);
                 // Should cater for undefined, null, empty
                 if (!prBody || prBody.length < 1) {
                     resolve({
                         isPrBodyComplete: false,
-                        message: `The PR Description is empty - do you have the pull request template setup (docs -> pull_request_template.md)? ❌`
+                        message: `The PR Description is empty - do you have the pull request template setup (docs -> pull_request_template.md)? ❌`,
                     });
                     return;
                 }
@@ -242,7 +264,7 @@ class PrBodyValidationService {
                     const placeholderMessage = `Please complete all placeholders: ${placeholderValidationMessage} 🚫`;
                     resolve({
                         isPrBodyComplete: false,
-                        message: placeholderMessage
+                        message: placeholderMessage,
                     });
                     return;
                 }
@@ -252,7 +274,7 @@ class PrBodyValidationService {
                 if (!isFinalChecklistComplete) {
                     resolve({
                         isPrBodyComplete: false,
-                        message: `Please complete the Sign off section: ${this.completedFinalChecklist.toString()} 🚫`
+                        message: `Please complete the Sign off section: ${this.completedFinalChecklist.toString()} 🚫`,
                     });
                     return;
                 }
@@ -260,7 +282,7 @@ class PrBodyValidationService {
                     isPrBodyComplete: true,
                     message: `Nice work 👍👍👍
                     The PR Description has passed all of the validation checks ✅✅✅.
-                    The code can now be merged!`
+                    The code can now be merged!`,
                 });
             });
         });

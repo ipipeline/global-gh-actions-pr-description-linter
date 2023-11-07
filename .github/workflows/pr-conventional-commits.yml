@@ -1,0 +1,25 @@
+name: PR Title - validate against conventional commits standards
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'renovate') == false # skip this step if this is a renovate pull request
+
+    # concurrency: # ensure only one job is running at a time
+    #   group: ${{ github.head_ref }}
+    #   cancel-in-progress: true
+
+    steps:
+      - uses: aslafy-z/conventional-pr-title-action@v3
+        with:
+          success-state: ✅ Title follows the specification.
+          failure-state: ❌ Title does not follow the specification - see https://www.conventionalcommits.org/en/v1.0.0/#specification.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
