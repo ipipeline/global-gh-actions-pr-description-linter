@@ -93,6 +93,6 @@ testCases.forEach(function (testCase) {
 
       expect(result.isPrBodyComplete).toBe(testCase.isPrBodyCompleteExpected);
       expect(result.message).toContain(testCase.expectedMessagePrefix);
-    }
+    },
   );
 });

@@ -17,7 +17,7 @@ async function run(): Promise<void> {
     const pr = github.context.payload.pull_request;
     if (!pr) {
       core.setFailed(
-        `github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`
+        `github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`,
       );
       return;
     }
@@ -77,7 +77,7 @@ async function run(): Promise<void> {
       core.setOutput(`comment-url`, response.data.html_url);
       core.setOutput(
         `responseMessage`,
-        `✅ All checks passed: ${result.message}`
+        `✅ All checks passed: ${result.message}`,
       );
       await dismissReview(issue);
     } else {
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
       core.setFailed(error.message);
     } else {
       const errorMessage = `An unknown error occurred: ${JSON.stringify(
-        error
+        error,
       )}`;
       core.setFailed(errorMessage);
     }
@@ -105,7 +105,7 @@ async function run(): Promise<void> {
 
 async function createOrUpdateReview(
   comment: string,
-  pullRequest: { owner: string; repo: string; number: number }
+  pullRequest: { owner: string; repo: string; number: number },
 ): Promise<void> {
   const reviews = await githubClient.rest.pulls.listReviews({
     owner: github.context.repo.owner,
