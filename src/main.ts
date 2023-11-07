@@ -113,11 +113,16 @@ async function createOrUpdateReview(
     pull_number: pullRequest.number,
   });
 
+  core.debug(`context.actor: ${github.context.actor}`);
+
   const existingReview = reviews.data.find((review) => {
+    core.debug(`review.body: ${review.body}`);
+    core.debug(`review.user: ${review.user?.login}`);
     return review.user?.login === github.context.actor;
   });
 
   if (existingReview) {
+    core.debug(`updating review`);
     void githubClient.rest.pulls.updateReview({
       owner: pullRequest.owner,
       repo: pullRequest.repo,
@@ -126,6 +131,7 @@ async function createOrUpdateReview(
       body: comment,
     });
   } else {
+    core.debug(`creating review`);
     void githubClient.rest.pulls.createReview({
       owner: pullRequest.owner,
       repo: pullRequest.repo,

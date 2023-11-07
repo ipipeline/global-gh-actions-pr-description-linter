@@ -130,11 +130,13 @@ function createOrUpdateReview(comment, pullRequest) {
             repo: github.context.repo.repo,
             pull_number: pullRequest.number,
         });
+        core.debug(`context.actor: ${github.context.actor}`);
         const existingReview = reviews.data.find((review) => {
             var _a;
             return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) === github.context.actor;
         });
         if (existingReview) {
+            core.debug(`updating review`);
             void githubClient.rest.pulls.updateReview({
                 owner: pullRequest.owner,
                 repo: pullRequest.repo,
@@ -144,6 +146,7 @@ function createOrUpdateReview(comment, pullRequest) {
             });
         }
         else {
+            core.debug(`creating review`);
             void githubClient.rest.pulls.createReview({
                 owner: pullRequest.owner,
                 repo: pullRequest.repo,
