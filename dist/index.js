@@ -130,10 +130,12 @@ function createOrUpdateReview(comment, pullRequest) {
             repo: github.context.repo.repo,
             pull_number: pullRequest.number,
         });
-        core.debug(`context.actor: ${github.context.actor}`);
+        core.debug(`reviews.length: ${reviews.data.length}`);
         const existingReview = reviews.data.find((review) => {
-            var _a;
-            return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) === github.context.actor;
+            var _a, _b;
+            core.debug(`review.body: ${review.body}`);
+            core.debug(`review.user: ${(_a = review.user) === null || _a === void 0 ? void 0 : _a.login}`);
+            return ((_b = review.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]';
         });
         if (existingReview) {
             core.debug(`updating review`);

@@ -113,12 +113,12 @@ async function createOrUpdateReview(
     pull_number: pullRequest.number,
   });
 
-  core.debug(`context.actor: ${github.context.actor}`);
+  core.debug(`reviews.length: ${reviews.data.length}`);
 
   const existingReview = reviews.data.find((review) => {
     core.debug(`review.body: ${review.body}`);
     core.debug(`review.user: ${review.user?.login}`);
-    return review.user?.login === github.context.actor;
+    return review.user?.login === 'github-actions[bot]';
   });
 
   if (existingReview) {
