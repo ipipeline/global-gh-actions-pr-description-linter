@@ -1,68 +1,68 @@
-import * as core from '@actions/core'
-import * as github from '@actions/github'
-import {PrBodyValidationService} from './pr-body-validation.service'
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { PrBodyValidationService } from './pr-body-validation.service';
 
-const repoTokenInput = core.getInput('repo-token', {required: true})
+const repoTokenInput = core.getInput('repo-token', { required: true });
 const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
-  required: false
-})
-const githubClient = github.getOctokit(repoTokenInput)
+  required: false,
+});
+const githubClient = github.getOctokit(repoTokenInput);
 
 async function run(): Promise<void> {
   try {
-    core.debug(new Date().toTimeString())
+    core.debug(new Date().toTimeString());
 
     // The pull_request exists on payload when a pull_request event is triggered.
     // Sets action status to failed when pull_request does not exist on payload.
-    const pr = github.context.payload.pull_request
+    const pr = github.context.payload.pull_request;
     if (!pr) {
       core.setFailed(
         `github.context.payload.pull_request does not exist. Have the correct event triggers been configured?`
-      )
-      return
+      );
+      return;
     }
 
     // Get owner and repo from context
-    const repo = github.context.repo.repo
-    const repoOwner = github.context.repo.owner
-    const issue = github.context.issue
-    const issueOwner = github.context.issue.owner
+    const repo = github.context.repo.repo;
+    const repoOwner = github.context.repo.owner;
+    const issue = github.context.issue;
+    const issueOwner = github.context.issue.owner;
 
-    core.debug(`repo: ${repo}`)
-    core.debug(`repoOwner: ${repoOwner}`)
-    core.debug(`issueOwner: ${issueOwner}`)
+    core.debug(`repo: ${repo}`);
+    core.debug(`repoOwner: ${repoOwner}`);
+    core.debug(`issueOwner: ${issueOwner}`);
 
-    const prAuthor = pr.user.login
-    core.debug(`prAuthor: ${prAuthor}`)
+    const prAuthor = pr.user.login;
+    core.debug(`prAuthor: ${prAuthor}`);
 
     if (whiteListedAuthorsPattern) {
-      core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`)
+      core.debug(`whiteListedAuthorsPattern: ${whiteListedAuthorsPattern}`);
 
-      const regexp = new RegExp(whiteListedAuthorsPattern)
+      const regexp = new RegExp(whiteListedAuthorsPattern);
       if (regexp.test(prAuthor)) {
-        const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`
-        core.debug(responseMessage)
+        const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`;
+        core.debug(responseMessage);
 
         const response = await githubClient.rest.issues.createComment({
           owner: repoOwner,
           repo,
           issue_number: pr.number,
-          body: responseMessage
-        })
+          body: responseMessage,
+        });
 
-        core.debug(`created comment URL: ${response.data.html_url}`)
-        core.setOutput(`comment-url`, response.data.html_url)
-        core.setOutput(`responseMessage`, responseMessage)
-        dismissReview(issue)
+        core.debug(`created comment URL: ${response.data.html_url}`);
+        core.setOutput(`comment-url`, response.data.html_url);
+        core.setOutput(`responseMessage`, responseMessage);
+        await dismissReview(issue);
 
-        return
+        return;
       }
     }
 
-    core.info(`PR Description- ${pr.body}`)
+    core.info(`PR Description- ${pr.body}`);
 
-    const prBodyValidationService = new PrBodyValidationService()
-    const result = await prBodyValidationService.validateBody(pr.body)
+    const prBodyValidationService = new PrBodyValidationService();
+    const result = await prBodyValidationService.validateBody(pr.body);
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
@@ -70,88 +70,110 @@ async function run(): Promise<void> {
         owner: repoOwner,
         repo,
         issue_number: pr.number,
-        body: result.message
-      })
+        body: result.message,
+      });
 
-      core.debug(`created comment URL: ${response.data.html_url}`)
-      core.setOutput(`comment-url`, response.data.html_url)
+      core.debug(`created comment URL: ${response.data.html_url}`);
+      core.setOutput(`comment-url`, response.data.html_url);
       core.setOutput(
         `responseMessage`,
         `✅ All checks passed: ${result.message}`
-      )
-      dismissReview(issue)
+      );
+      await dismissReview(issue);
     } else {
-      const failedMessage = `🚧 PR Description incomplete: ${result.message}`
+      const failedMessage = `🚧 PR Description incomplete: ${result.message}`;
 
-      core.setOutput(`responseMessage`, failedMessage)
-      createReview(result.message, issue)
+      core.setOutput(`responseMessage`, failedMessage);
+      await createOrUpdateReview(result.message, issue);
 
-      core.setFailed(failedMessage)
-      return
+      core.setFailed(failedMessage);
+      return;
     }
 
-    core.debug(new Date().toTimeString())
+    core.debug(new Date().toTimeString());
   } catch (error: unknown) {
     if (error instanceof Error) {
-      core.setFailed(error.message)
+      core.setFailed(error.message);
     } else {
-      const errorMessage = `An unknown error occurred: ${JSON.stringify(error)}`
-      core.setFailed(errorMessage)
+      const errorMessage = `An unknown error occurred: ${JSON.stringify(
+        error
+      )}`;
+      core.setFailed(errorMessage);
     }
   }
 }
 
-function createReview(
+async function createOrUpdateReview(
   comment: string,
-  pullRequest: {owner: string; repo: string; number: number}
-): void {
-  void githubClient.rest.pulls.createReview({
-    owner: pullRequest.owner,
-    repo: pullRequest.repo,
+  pullRequest: { owner: string; repo: string; number: number }
+): Promise<void> {
+  const reviews = await githubClient.rest.pulls.listReviews({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
     pull_number: pullRequest.number,
-    body: comment,
-    event: 'REQUEST_CHANGES' // Could use "COMMENT"
-  })
+  });
+
+  const existingReview = reviews.data.find((review) => {
+    return review.user?.login === github.context.actor;
+  });
+
+  if (existingReview) {
+    void githubClient.rest.pulls.updateReview({
+      owner: pullRequest.owner,
+      repo: pullRequest.repo,
+      pull_number: pullRequest.number,
+      review_id: existingReview.id,
+      body: comment,
+    });
+  } else {
+    void githubClient.rest.pulls.createReview({
+      owner: pullRequest.owner,
+      repo: pullRequest.repo,
+      pull_number: pullRequest.number,
+      body: comment,
+      event: 'REQUEST_CHANGES', // Could use "COMMENT"
+    });
+  }
 }
 
 async function dismissReview(pullRequest: {
-  owner: string
-  repo: string
-  number: number
+  owner: string;
+  repo: string;
+  number: number;
 }): Promise<void> {
   const reviews = await githubClient.rest.pulls.listReviews({
     owner: pullRequest.owner,
     repo: pullRequest.repo,
-    pull_number: pullRequest.number
-  })
+    pull_number: pullRequest.number,
+  });
 
-  core.debug(`found: ${reviews.data.length} reviews`)
+  core.debug(`found: ${reviews.data.length} reviews`);
 
   for (const review of reviews.data) {
     if (
       isGitHubActionUser(review.user?.login) &&
       alreadyRequiredChanges(review.state)
     ) {
-      core.debug(`dismissing review: ${review.id}`)
+      core.debug(`dismissing review: ${review.id}`);
       void githubClient.rest.pulls.dismissReview({
         owner: pullRequest.owner,
         repo: pullRequest.repo,
         pull_number: pullRequest.number,
         review_id: review.id,
-        message: "All actions resolved, you're good to go ✅"
-      })
+        message: "All actions resolved, you're good to go ✅",
+      });
     }
   }
 }
 
 function isGitHubActionUser(login: string | undefined): boolean {
-  core.debug(`login: ${login}`)
-  return login === 'github-actions[bot]'
+  core.debug(`login: ${login}`);
+  return login === 'github-actions[bot]';
 }
 
 function alreadyRequiredChanges(state: string): boolean {
-  core.debug(`state: ${state}`)
-  return state === 'CHANGES_REQUESTED'
+  core.debug(`state: ${state}`);
+  return state === 'CHANGES_REQUESTED';
 }
 
-run()
+run();
