@@ -8,10 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Validate all details have been completed on the pull request description
 
-    concurrency: # ensure only one job is running at a time
-      group: ${{ github.head_ref }} 
-      cancel-in-progress: true
-
     steps:
     - name: ✅ PR Description Linter
       id: prlint
