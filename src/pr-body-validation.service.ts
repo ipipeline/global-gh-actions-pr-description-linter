@@ -7,7 +7,7 @@ export class PrBodyValidationService {
   private completedFinalChecklist: string[] = [`- [x] **Author(s):**`];
 
   async validateBody(
-    prBody: string | null | undefined
+    prBody: string | null | undefined,
   ): Promise<IPrBodyValidationStatus> {
     return new Promise((resolve) => {
       core.debug(`Validating PR Description: ${prBody}`);
@@ -22,7 +22,7 @@ export class PrBodyValidationService {
       }
 
       const arePlaceholdersIncomplete = this.placeholderItems.every(function (
-        item
+        item,
       ) {
         return prBody.includes(item);
       });
@@ -52,7 +52,7 @@ export class PrBodyValidationService {
       const isFinalChecklistComplete = this.completedFinalChecklist.every(
         function (item) {
           return prBody.includes(item);
-        }
+        },
       );
 
       if (!isFinalChecklistComplete) {
