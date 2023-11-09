@@ -121,7 +121,7 @@ function createOrUpdateReview(comment, pullRequest) {
             pull_number: pullRequest.number,
         });
         core.debug(`reviews.length: ${reviews.data.length}`);
-        const reviewPrefix = '### PR Check:';
+        const reviewPrefix = '## PR Check';
         const existingReview = reviews.data.find((review) => {
             var _a, _b, _c;
             core.debug(`review.body: ${review.body}`);
@@ -136,8 +136,10 @@ function createOrUpdateReview(comment, pullRequest) {
                 repo: pullRequest.repo,
                 pull_number: pullRequest.number,
                 review_id: existingReview.id,
-                body: `${reviewPrefix}
-      ${comment}`,
+                body: `
+      ${reviewPrefix}
+      ${comment}
+      `,
             });
         }
         else {
@@ -161,7 +163,7 @@ function createOrUpdateComment(comment, pullRequest) {
             issue_number: pullRequest.number,
         });
         core.debug(`comments.length: ${comments.data.length}`);
-        const commentPrefix = '### PR Check:';
+        const commentPrefix = '## PR Check';
         const existingComment = comments.data.find((comment) => {
             var _a, _b, _c;
             core.debug(`comments.body: ${comment.body}`);
@@ -176,8 +178,10 @@ function createOrUpdateComment(comment, pullRequest) {
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
                 comment_id: existingComment.id,
-                body: `${commentPrefix}
-      ${comment}`,
+                body: `
+      ${commentPrefix}
+      ${comment}
+      `,
             });
         }
         else {
@@ -186,8 +190,10 @@ function createOrUpdateComment(comment, pullRequest) {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
-                body: `${commentPrefix}
-      ${comment}`,
+                body: `
+      ${commentPrefix}
+      ${comment}
+      `,
             });
         }
     });

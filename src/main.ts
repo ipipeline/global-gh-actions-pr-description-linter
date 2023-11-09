@@ -105,7 +105,7 @@ async function createOrUpdateReview(
 
   core.debug(`reviews.length: ${reviews.data.length}`);
 
-  const reviewPrefix = '### PR Check:';
+  const reviewPrefix = '## PR Check';
   const existingReview = reviews.data.find((review) => {
     core.debug(`review.body: ${review.body}`);
     core.debug(`review.user: ${review.user?.login}`);
@@ -122,8 +122,10 @@ async function createOrUpdateReview(
       repo: pullRequest.repo,
       pull_number: pullRequest.number,
       review_id: existingReview.id,
-      body: `${reviewPrefix}
-      ${comment}`,
+      body: `
+      ${reviewPrefix}
+      ${comment}
+      `,
     });
   } else {
     core.debug(`creating review`);
@@ -150,7 +152,7 @@ async function createOrUpdateComment(
 
   core.debug(`comments.length: ${comments.data.length}`);
 
-  const commentPrefix = '### PR Check:';
+  const commentPrefix = '## PR Check';
   const existingComment = comments.data.find((comment) => {
     core.debug(`comments.body: ${comment.body}`);
     core.debug(`comments.user: ${comment.user?.login}`);
@@ -167,8 +169,10 @@ async function createOrUpdateComment(
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
       comment_id: existingComment.id,
-      body: `${commentPrefix}
-      ${comment}`,
+      body: `
+      ${commentPrefix}
+      ${comment}
+      `,
     });
   } else {
     core.debug(`creating comment`);
@@ -176,8 +180,10 @@ async function createOrUpdateComment(
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
-      body: `${commentPrefix}
-      ${comment}`,
+      body: `
+      ${commentPrefix}
+      ${comment}
+      `,
     });
   }
 }
