@@ -121,11 +121,12 @@ function createOrUpdateReview(comment, pullRequest) {
             pull_number: pullRequest.number,
         });
         core.debug(`reviews.length: ${reviews.data.length}`);
+        const reviewPrefix = '### PR Check:  ';
         const existingReview = reviews.data.find((review) => {
-            var _a, _b;
+            var _a, _b, _c;
             core.debug(`review.body: ${review.body}`);
             core.debug(`review.user: ${(_a = review.user) === null || _a === void 0 ? void 0 : _a.login}`);
-            return ((_b = review.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]';
+            return ((_b = review.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]' && ((_c = review.body) === null || _c === void 0 ? void 0 : _c.startsWith(reviewPrefix));
         });
         if (existingReview) {
             core.debug(`updating review`);
@@ -157,11 +158,12 @@ function createOrUpdateComment(comment, pullRequest) {
             issue_number: pullRequest.number,
         });
         core.debug(`comments.length: ${comments.data.length}`);
-        const existingComment = comments.data.find((comments) => {
-            var _a, _b;
-            core.debug(`comments.body: ${comments.body}`);
-            core.debug(`comments.user: ${(_a = comments.user) === null || _a === void 0 ? void 0 : _a.login}`);
-            return ((_b = comments.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]';
+        const commentPrefix = '### PR Check:  ';
+        const existingComment = comments.data.find((comment) => {
+            var _a, _b, _c;
+            core.debug(`comments.body: ${comment.body}`);
+            core.debug(`comments.user: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}`);
+            return ((_b = comment.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]' && ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.startsWith(commentPrefix));
         });
         if (existingComment) {
             core.debug(`updating comment`);
@@ -170,7 +172,7 @@ function createOrUpdateComment(comment, pullRequest) {
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
                 comment_id: existingComment.id,
-                body: comment,
+                body: commentPrefix + comment,
             });
         }
         else {
@@ -179,7 +181,7 @@ function createOrUpdateComment(comment, pullRequest) {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
-                body: comment,
+                body: commentPrefix + comment,
             });
         }
     });

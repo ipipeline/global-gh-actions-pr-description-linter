@@ -109,7 +109,10 @@ async function createOrUpdateReview(
   const existingReview = reviews.data.find((review) => {
     core.debug(`review.body: ${review.body}`);
     core.debug(`review.user: ${review.user?.login}`);
-    return review.user?.login === 'github-actions[bot]' && review.body?.startsWith(reviewPrefix);
+    return (
+      review.user?.login === 'github-actions[bot]' &&
+      review.body?.startsWith(reviewPrefix)
+    );
   });
 
   if (existingReview) {
@@ -149,7 +152,10 @@ async function createOrUpdateComment(
   const existingComment = comments.data.find((comment) => {
     core.debug(`comments.body: ${comment.body}`);
     core.debug(`comments.user: ${comment.user?.login}`);
-    return comment.user?.login === 'github-actions[bot]' && comment.body?.startsWith(commentPrefix);
+    return (
+      comment.user?.login === 'github-actions[bot]' &&
+      comment.body?.startsWith(commentPrefix)
+    );
   });
 
   if (existingComment) {
