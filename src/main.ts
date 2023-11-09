@@ -43,12 +43,7 @@ async function run(): Promise<void> {
         const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`;
         core.debug(responseMessage);
 
-        const response = await githubClient.rest.issues.createComment({
-          owner: repoOwner,
-          repo,
-          issue_number: pr.number,
-          body: responseMessage,
-        });
+        const response = await createOrUpdateComment(responseMessage, issue);
 
         core.debug(`created comment URL: ${response.data.html_url}`);
         core.setOutput(`comment-url`, response.data.html_url);
@@ -66,14 +61,9 @@ async function run(): Promise<void> {
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
-      const response = await githubClient.rest.issues.createComment({
-        owner: repoOwner,
-        repo,
-        issue_number: pr.number,
-        body: result.message,
-      });
+      const response = await createOrUpdateComment(result.message, issue);
 
-      core.debug(`created comment URL: ${response.data.html_url}`);
+      core.debug(`comment URL: ${response.data.html_url}`);
       core.setOutput(`comment-url`, response.data.html_url);
       core.setOutput(
         `responseMessage`,
@@ -138,6 +128,44 @@ async function createOrUpdateReview(
       pull_number: pullRequest.number,
       body: comment,
       event: 'REQUEST_CHANGES', // Could use "COMMENT"
+    });
+  }
+}
+
+async function createOrUpdateComment(
+  comment: string,
+  pullRequest: { owner: string; repo: string; number: number },
+): Promise<any> {
+  const comments = await githubClient.rest.issues.listComments({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    issue_number: pullRequest.number,
+  });
+
+  core.debug(`comments.length: ${comments.data.length}`);
+
+  const existingComment = comments.data.find((comments) => {
+    core.debug(`comments.body: ${comments.body}`);
+    core.debug(`comments.user: ${comments.user?.login}`);
+    return comments.user?.login === 'github-actions[bot]';
+  });
+
+  if (existingComment) {
+    core.debug(`updating comment`);
+    return await githubClient.rest.issues.updateComment({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: pullRequest.number,
+      comment_id: existingComment.id,
+      body: comment,
+    });
+  } else {
+    core.debug(`creating comment`);
+    return await githubClient.rest.issues.createComment({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: pullRequest.number,
+      body: comment,
     });
   }
 }
