@@ -74,12 +74,7 @@ function run() {
                 if (regexp.test(prAuthor)) {
                     const responseMessage = `⏩ Skipping PR Description checks as author is whitelisted: ${prAuthor}`;
                     core.debug(responseMessage);
-                    const response = yield githubClient.rest.issues.createComment({
-                        owner: repoOwner,
-                        repo,
-                        issue_number: pr.number,
-                        body: responseMessage,
-                    });
+                    const response = yield createOrUpdateComment(responseMessage, issue);
                     core.debug(`created comment URL: ${response.data.html_url}`);
                     core.setOutput(`comment-url`, response.data.html_url);
                     core.setOutput(`responseMessage`, responseMessage);
@@ -92,13 +87,8 @@ function run() {
             const result = yield prBodyValidationService.validateBody(pr.body);
             // Create a comment on PR
             if (result.isPrBodyComplete) {
-                const response = yield githubClient.rest.issues.createComment({
-                    owner: repoOwner,
-                    repo,
-                    issue_number: pr.number,
-                    body: result.message,
-                });
-                core.debug(`created comment URL: ${response.data.html_url}`);
+                const response = yield createOrUpdateComment(result.message, issue);
+                core.debug(`comment URL: ${response.data.html_url}`);
                 core.setOutput(`comment-url`, response.data.html_url);
                 core.setOutput(`responseMessage`, `✅ All checks passed: ${result.message}`);
                 yield dismissReview(issue);
@@ -155,6 +145,41 @@ function createOrUpdateReview(comment, pullRequest) {
                 pull_number: pullRequest.number,
                 body: comment,
                 event: 'REQUEST_CHANGES', // Could use "COMMENT"
+            });
+        }
+    });
+}
+function createOrUpdateComment(comment, pullRequest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const comments = yield githubClient.rest.issues.listComments({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: pullRequest.number,
+        });
+        core.debug(`comments.length: ${comments.data.length}`);
+        const existingComment = comments.data.find((comments) => {
+            var _a, _b;
+            core.debug(`comments.body: ${comments.body}`);
+            core.debug(`comments.user: ${(_a = comments.user) === null || _a === void 0 ? void 0 : _a.login}`);
+            return ((_b = comments.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]';
+        });
+        if (existingComment) {
+            core.debug(`updating comment`);
+            return yield githubClient.rest.issues.updateComment({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                issue_number: pullRequest.number,
+                comment_id: existingComment.id,
+                body: comment,
+            });
+        }
+        else {
+            core.debug(`creating comment`);
+            return yield githubClient.rest.issues.createComment({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                issue_number: pullRequest.number,
+                body: comment,
             });
         }
     });
