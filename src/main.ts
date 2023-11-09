@@ -123,9 +123,9 @@ async function createOrUpdateReview(
       pull_number: pullRequest.number,
       review_id: existingReview.id,
       body: `
-      ${reviewPrefix}
-      ${comment}
-      `,
+${reviewPrefix}
+${comment}
+`,
     });
   } else {
     core.debug(`creating review`);
@@ -133,8 +133,10 @@ async function createOrUpdateReview(
       owner: pullRequest.owner,
       repo: pullRequest.repo,
       pull_number: pullRequest.number,
-      body: `${reviewPrefix}
-      ${comment}`,
+      body: `
+${reviewPrefix}
+${comment}
+`,
       event: 'REQUEST_CHANGES', // Could use "COMMENT"
     });
   }
@@ -170,9 +172,9 @@ async function createOrUpdateComment(
       issue_number: pullRequest.number,
       comment_id: existingComment.id,
       body: `
-      ${commentPrefix}
-      ${comment}
-      `,
+${commentPrefix}
+${comment}
+`,
     });
   } else {
     core.debug(`creating comment`);
@@ -181,9 +183,9 @@ async function createOrUpdateComment(
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
       body: `
-      ${commentPrefix}
-      ${comment}
-      `,
+${commentPrefix}
+${comment}
+`,
     });
   }
 }

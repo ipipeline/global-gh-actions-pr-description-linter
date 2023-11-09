@@ -137,9 +137,9 @@ function createOrUpdateReview(comment, pullRequest) {
                 pull_number: pullRequest.number,
                 review_id: existingReview.id,
                 body: `
-      ${reviewPrefix}
-      ${comment}
-      `,
+${reviewPrefix}
+${comment}
+`,
             });
         }
         else {
@@ -148,8 +148,10 @@ function createOrUpdateReview(comment, pullRequest) {
                 owner: pullRequest.owner,
                 repo: pullRequest.repo,
                 pull_number: pullRequest.number,
-                body: `${reviewPrefix}
-      ${comment}`,
+                body: `
+${reviewPrefix}
+${comment}
+`,
                 event: 'REQUEST_CHANGES', // Could use "COMMENT"
             });
         }
@@ -179,9 +181,9 @@ function createOrUpdateComment(comment, pullRequest) {
                 issue_number: pullRequest.number,
                 comment_id: existingComment.id,
                 body: `
-      ${commentPrefix}
-      ${comment}
-      `,
+${commentPrefix}
+${comment}
+`,
             });
         }
         else {
@@ -191,9 +193,9 @@ function createOrUpdateComment(comment, pullRequest) {
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
                 body: `
-      ${commentPrefix}
-      ${comment}
-      `,
+${commentPrefix}
+${comment}
+`,
             });
         }
     });
@@ -324,9 +326,11 @@ class PrBodyValidationService {
                 }
                 resolve({
                     isPrBodyComplete: true,
-                    message: `Nice work 👍👍👍
-                    The PR Description has passed all of the validation checks ✅✅✅.
-                    The code can now be merged!`,
+                    message: `
+Nice work 👍👍👍
+The PR Description has passed all of the validation checks ✅✅✅.
+The code can now be merged!
+`,
                 });
             });
         });
