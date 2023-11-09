@@ -105,10 +105,11 @@ async function createOrUpdateReview(
 
   core.debug(`reviews.length: ${reviews.data.length}`);
 
+  const reviewPrefix = '### PR Check:  ';
   const existingReview = reviews.data.find((review) => {
     core.debug(`review.body: ${review.body}`);
     core.debug(`review.user: ${review.user?.login}`);
-    return review.user?.login === 'github-actions[bot]';
+    return review.user?.login === 'github-actions[bot]' && review.body?.startsWith(reviewPrefix);
   });
 
   if (existingReview) {
@@ -144,10 +145,11 @@ async function createOrUpdateComment(
 
   core.debug(`comments.length: ${comments.data.length}`);
 
-  const existingComment = comments.data.find((comments) => {
-    core.debug(`comments.body: ${comments.body}`);
-    core.debug(`comments.user: ${comments.user?.login}`);
-    return comments.user?.login === 'github-actions[bot]';
+  const commentPrefix = '### PR Check:  ';
+  const existingComment = comments.data.find((comment) => {
+    core.debug(`comments.body: ${comment.body}`);
+    core.debug(`comments.user: ${comment.user?.login}`);
+    return comment.user?.login === 'github-actions[bot]' && comment.body?.startsWith(commentPrefix);
   });
 
   if (existingComment) {
@@ -157,7 +159,7 @@ async function createOrUpdateComment(
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
       comment_id: existingComment.id,
-      body: comment,
+      body: commentPrefix + comment,
     });
   } else {
     core.debug(`creating comment`);
@@ -165,7 +167,7 @@ async function createOrUpdateComment(
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
-      body: comment,
+      body: commentPrefix + comment,
     });
   }
 }
