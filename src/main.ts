@@ -122,8 +122,7 @@ async function createOrUpdateReview(
       repo: pullRequest.repo,
       pull_number: pullRequest.number,
       review_id: existingReview.id,
-      body: `
-${reviewPrefix}
+      body: `${reviewPrefix}
 ${comment}
 `,
     });
@@ -133,8 +132,7 @@ ${comment}
       owner: pullRequest.owner,
       repo: pullRequest.repo,
       pull_number: pullRequest.number,
-      body: `
-${reviewPrefix}
+      body: `${reviewPrefix}
 ${comment}
 `,
       event: 'REQUEST_CHANGES', // Could use "COMMENT"
@@ -171,8 +169,7 @@ async function createOrUpdateComment(
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
       comment_id: existingComment.id,
-      body: `
-${commentPrefix}
+      body: `${commentPrefix}
 ${comment}
 `,
     });
@@ -182,8 +179,7 @@ ${comment}
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
-      body: `
-${commentPrefix}
+      body: `${commentPrefix}
 ${comment}
 `,
     });

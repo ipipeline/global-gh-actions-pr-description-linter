@@ -65,8 +65,7 @@ export class PrBodyValidationService {
 
       resolve({
         isPrBodyComplete: true,
-        message: `
-Nice work 👍👍👍
+        message: `Nice work 👍👍👍
 The PR Description has passed all of the validation checks ✅✅✅.
 The code can now be merged!
 `,

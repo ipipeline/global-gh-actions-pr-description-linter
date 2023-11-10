@@ -136,8 +136,7 @@ function createOrUpdateReview(comment, pullRequest) {
                 repo: pullRequest.repo,
                 pull_number: pullRequest.number,
                 review_id: existingReview.id,
-                body: `
-${reviewPrefix}
+                body: `${reviewPrefix}
 ${comment}
 `,
             });
@@ -148,8 +147,7 @@ ${comment}
                 owner: pullRequest.owner,
                 repo: pullRequest.repo,
                 pull_number: pullRequest.number,
-                body: `
-${reviewPrefix}
+                body: `${reviewPrefix}
 ${comment}
 `,
                 event: 'REQUEST_CHANGES', // Could use "COMMENT"
@@ -180,8 +178,7 @@ function createOrUpdateComment(comment, pullRequest) {
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
                 comment_id: existingComment.id,
-                body: `
-${commentPrefix}
+                body: `${commentPrefix}
 ${comment}
 `,
             });
@@ -192,8 +189,7 @@ ${comment}
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
-                body: `
-${commentPrefix}
+                body: `${commentPrefix}
 ${comment}
 `,
             });
@@ -326,8 +322,7 @@ class PrBodyValidationService {
                 }
                 resolve({
                     isPrBodyComplete: true,
-                    message: `
-Nice work 👍👍👍
+                    message: `Nice work 👍👍👍
 The PR Description has passed all of the validation checks ✅✅✅.
 The code can now be merged!
 `,
