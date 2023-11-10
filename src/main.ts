@@ -111,7 +111,7 @@ async function createOrUpdateReview(
     core.debug(`review.user: ${review.user?.login}`);
     return (
       review.user?.login === 'github-actions[bot]' &&
-      review.body?.startsWith(reviewPrefix)
+      review.body?.includes(reviewPrefix)
     );
   });
 
@@ -158,7 +158,7 @@ async function createOrUpdateComment(
     core.debug(`comments.user: ${comment.user?.login}`);
     return (
       comment.user?.login === 'github-actions[bot]' &&
-      comment.body?.startsWith(commentPrefix)
+      comment.body?.includes(commentPrefix)
     );
   });
 

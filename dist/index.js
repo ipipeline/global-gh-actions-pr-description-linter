@@ -127,7 +127,7 @@ function createOrUpdateReview(comment, pullRequest) {
             core.debug(`review.body: ${review.body}`);
             core.debug(`review.user: ${(_a = review.user) === null || _a === void 0 ? void 0 : _a.login}`);
             return (((_b = review.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]' &&
-                ((_c = review.body) === null || _c === void 0 ? void 0 : _c.startsWith(reviewPrefix)));
+                ((_c = review.body) === null || _c === void 0 ? void 0 : _c.includes(reviewPrefix)));
         });
         if (existingReview) {
             core.debug(`updating review`);
@@ -169,7 +169,7 @@ function createOrUpdateComment(comment, pullRequest) {
             core.debug(`comments.body: ${comment.body}`);
             core.debug(`comments.user: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}`);
             return (((_b = comment.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]' &&
-                ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.startsWith(commentPrefix)));
+                ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes(commentPrefix)));
         });
         if (existingComment) {
             core.debug(`updating comment`);
