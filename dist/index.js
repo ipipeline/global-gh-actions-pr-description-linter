@@ -47,6 +47,8 @@ const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
     required: false,
 });
 const githubClient = github.getOctokit(repoTokenInput);
+const reviewPrefix = '## PR Review';
+const commentPrefix = '## PR Check';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -121,7 +123,6 @@ function createOrUpdateReview(comment, pullRequest) {
             pull_number: pullRequest.number,
         });
         core.debug(`reviews.length: ${reviews.data.length}`);
-        const reviewPrefix = '## PR Check';
         const existingReview = reviews.data.find((review) => {
             var _a, _b, _c;
             core.debug(`review.body: ${review.body}`);
@@ -137,8 +138,7 @@ function createOrUpdateReview(comment, pullRequest) {
                 pull_number: pullRequest.number,
                 review_id: existingReview.id,
                 body: `${reviewPrefix}
-${comment}
-`,
+${comment}`,
             });
         }
         else {
@@ -148,8 +148,7 @@ ${comment}
                 repo: pullRequest.repo,
                 pull_number: pullRequest.number,
                 body: `${reviewPrefix}
-${comment}
-`,
+${comment}`,
                 event: 'REQUEST_CHANGES', // Could use "COMMENT"
             });
         }
@@ -163,7 +162,6 @@ function createOrUpdateComment(comment, pullRequest) {
             issue_number: pullRequest.number,
         });
         core.debug(`comments.length: ${comments.data.length}`);
-        const commentPrefix = '## PR Check';
         const existingComment = comments.data.find((comment) => {
             var _a, _b, _c;
             core.debug(`comments.body: ${comment.body}`);
@@ -179,8 +177,7 @@ function createOrUpdateComment(comment, pullRequest) {
                 issue_number: pullRequest.number,
                 comment_id: existingComment.id,
                 body: `${commentPrefix}
-${comment}
-`,
+${comment}`,
             });
         }
         else {
@@ -190,14 +187,13 @@ ${comment}
                 repo: github.context.repo.repo,
                 issue_number: pullRequest.number,
                 body: `${commentPrefix}
-${comment}
-`,
+${comment}`,
             });
         }
     });
 }
 function dismissReview(pullRequest) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const reviews = yield githubClient.rest.pulls.listReviews({
             owner: pullRequest.owner,
@@ -206,8 +202,9 @@ function dismissReview(pullRequest) {
         });
         core.debug(`found: ${reviews.data.length} reviews`);
         for (const review of reviews.data) {
-            if (isGitHubActionUser((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) &&
-                alreadyRequiredChanges(review.state)) {
+            if (isGitHubActionUser((_a = review.user) === null || _a === void 0 ? void 0 : _a.login)
+                && ((_b = review.body) === null || _b === void 0 ? void 0 : _b.includes(reviewPrefix))
+                && alreadyRequiredChanges(review.state)) {
                 core.debug(`dismissing review: ${review.id}`);
                 void githubClient.rest.pulls.dismissReview({
                     owner: pullRequest.owner,

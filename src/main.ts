@@ -7,6 +7,8 @@ const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
   required: false,
 });
 const githubClient = github.getOctokit(repoTokenInput);
+const reviewPrefix = '## PR Review';
+const commentPrefix = '## PR Check';
 
 async function run(): Promise<void> {
   try {
@@ -105,7 +107,6 @@ async function createOrUpdateReview(
 
   core.debug(`reviews.length: ${reviews.data.length}`);
 
-  const reviewPrefix = '## PR Check';
   const existingReview = reviews.data.find((review) => {
     core.debug(`review.body: ${review.body}`);
     core.debug(`review.user: ${review.user?.login}`);
@@ -123,8 +124,7 @@ async function createOrUpdateReview(
       pull_number: pullRequest.number,
       review_id: existingReview.id,
       body: `${reviewPrefix}
-${comment}
-`,
+${comment}`,
     });
   } else {
     core.debug(`creating review`);
@@ -133,8 +133,7 @@ ${comment}
       repo: pullRequest.repo,
       pull_number: pullRequest.number,
       body: `${reviewPrefix}
-${comment}
-`,
+${comment}`,
       event: 'REQUEST_CHANGES', // Could use "COMMENT"
     });
   }
@@ -152,7 +151,6 @@ async function createOrUpdateComment(
 
   core.debug(`comments.length: ${comments.data.length}`);
 
-  const commentPrefix = '## PR Check';
   const existingComment = comments.data.find((comment) => {
     core.debug(`comments.body: ${comment.body}`);
     core.debug(`comments.user: ${comment.user?.login}`);
@@ -170,8 +168,7 @@ async function createOrUpdateComment(
       issue_number: pullRequest.number,
       comment_id: existingComment.id,
       body: `${commentPrefix}
-${comment}
-`,
+${comment}`,
     });
   } else {
     core.debug(`creating comment`);
@@ -180,8 +177,7 @@ ${comment}
       repo: github.context.repo.repo,
       issue_number: pullRequest.number,
       body: `${commentPrefix}
-${comment}
-`,
+${comment}`,
     });
   }
 }
@@ -202,6 +198,7 @@ async function dismissReview(pullRequest: {
   for (const review of reviews.data) {
     if (
       isGitHubActionUser(review.user?.login) &&
+      review.body?.includes(reviewPrefix) &&
       alreadyRequiredChanges(review.state)
     ) {
       core.debug(`dismissing review: ${review.id}`);
