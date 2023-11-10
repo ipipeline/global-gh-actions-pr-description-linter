@@ -7,7 +7,7 @@ const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
   required: false,
 });
 const githubClient = github.getOctokit(repoTokenInput);
-const reviewPrefix = '## PR Review';
+// const reviewPrefix = '## PR Review';
 const commentPrefix = '## PR Check';
 
 async function run(): Promise<void> {
@@ -46,12 +46,10 @@ async function run(): Promise<void> {
         core.debug(responseMessage);
 
         const response = await createOrUpdateComment(responseMessage, issue);
-
         core.debug(`created comment URL: ${response.data.html_url}`);
         core.setOutput(`comment-url`, response.data.html_url);
         core.setOutput(`responseMessage`, responseMessage);
-        await dismissReview(issue);
-
+        //await dismissReview(issue);
         return;
       }
     }
@@ -63,21 +61,18 @@ async function run(): Promise<void> {
 
     // Create a comment on PR
     if (result.isPrBodyComplete) {
-      const response = await createOrUpdateComment(result.message, issue);
-
+      const successMessage = `✅ All checks passed: ${result.message}`;
+      const response = await createOrUpdateComment(successMessage, issue);
       core.debug(`comment URL: ${response.data.html_url}`);
       core.setOutput(`comment-url`, response.data.html_url);
-      core.setOutput(
-        `responseMessage`,
-        `✅ All checks passed: ${result.message}`,
-      );
-      await dismissReview(issue);
+      core.setOutput(`responseMessage`, successMessage);
+      // await dismissReview(issue);
     } else {
       const failedMessage = `🚧 PR Description incomplete: ${result.message}`;
-
+      const response = await createOrUpdateComment(failedMessage, issue);
+      core.debug(`comment URL: ${response.data.html_url}`);
+      core.setOutput(`comment-url`, response.data.html_url);
       core.setOutput(`responseMessage`, failedMessage);
-      await createOrUpdateReview(result.message, issue);
-
       core.setFailed(failedMessage);
       return;
     }
@@ -95,49 +90,49 @@ async function run(): Promise<void> {
   }
 }
 
-async function createOrUpdateReview(
-  comment: string,
-  pullRequest: { owner: string; repo: string; number: number },
-): Promise<void> {
-  const reviews = await githubClient.rest.pulls.listReviews({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    pull_number: pullRequest.number,
-  });
+// async function createOrUpdateReview(
+//   comment: string,
+//   pullRequest: { owner: string; repo: string; number: number },
+// ): Promise<void> {
+//   const reviews = await githubClient.rest.pulls.listReviews({
+//     owner: github.context.repo.owner,
+//     repo: github.context.repo.repo,
+//     pull_number: pullRequest.number,
+//   });
 
-  core.debug(`reviews.length: ${reviews.data.length}`);
+//   core.debug(`reviews.length: ${reviews.data.length}`);
 
-  const existingReview = reviews.data.find((review) => {
-    core.debug(`review.body: ${review.body}`);
-    core.debug(`review.user: ${review.user?.login}`);
-    return (
-      review.user?.login === 'github-actions[bot]' &&
-      review.body?.includes(reviewPrefix)
-    );
-  });
+//   const existingReview = reviews.data.find((review) => {
+//     core.debug(`review.body: ${review.body}`);
+//     core.debug(`review.user: ${review.user?.login}`);
+//     return (
+//       review.user?.login === 'github-actions[bot]' &&
+//       review.body?.includes(reviewPrefix)
+//     );
+//   });
 
-  if (existingReview) {
-    core.debug(`updating review`);
-    void githubClient.rest.pulls.updateReview({
-      owner: pullRequest.owner,
-      repo: pullRequest.repo,
-      pull_number: pullRequest.number,
-      review_id: existingReview.id,
-      body: `${reviewPrefix}
-${comment}`,
-    });
-  } else {
-    core.debug(`creating review`);
-    void githubClient.rest.pulls.createReview({
-      owner: pullRequest.owner,
-      repo: pullRequest.repo,
-      pull_number: pullRequest.number,
-      body: `${reviewPrefix}
-${comment}`,
-      event: 'REQUEST_CHANGES', // Could use "COMMENT"
-    });
-  }
-}
+//   if (existingReview) {
+//     core.debug(`updating review`);
+//     void githubClient.rest.pulls.updateReview({
+//       owner: pullRequest.owner,
+//       repo: pullRequest.repo,
+//       pull_number: pullRequest.number,
+//       review_id: existingReview.id,
+//       body: `${reviewPrefix}
+// ${comment}`,
+//     });
+//   } else {
+//     core.debug(`creating review`);
+//     void githubClient.rest.pulls.createReview({
+//       owner: pullRequest.owner,
+//       repo: pullRequest.repo,
+//       pull_number: pullRequest.number,
+//       body: `${reviewPrefix}
+// ${comment}`,
+//       event: 'REQUEST_CHANGES', // Could use "COMMENT"
+//     });
+//   }
+// }
 
 async function createOrUpdateComment(
   comment: string,
@@ -182,45 +177,45 @@ ${comment}`,
   }
 }
 
-async function dismissReview(pullRequest: {
-  owner: string;
-  repo: string;
-  number: number;
-}): Promise<void> {
-  const reviews = await githubClient.rest.pulls.listReviews({
-    owner: pullRequest.owner,
-    repo: pullRequest.repo,
-    pull_number: pullRequest.number,
-  });
+// async function dismissReview(pullRequest: {
+//   owner: string;
+//   repo: string;
+//   number: number;
+// }): Promise<void> {
+//   const reviews = await githubClient.rest.pulls.listReviews({
+//     owner: pullRequest.owner,
+//     repo: pullRequest.repo,
+//     pull_number: pullRequest.number,
+//   });
 
-  core.debug(`found: ${reviews.data.length} reviews`);
+//   core.debug(`found: ${reviews.data.length} reviews`);
 
-  for (const review of reviews.data) {
-    if (
-      isGitHubActionUser(review.user?.login) &&
-      review.body?.includes(reviewPrefix) &&
-      alreadyRequiredChanges(review.state)
-    ) {
-      core.debug(`dismissing review: ${review.id}`);
-      void githubClient.rest.pulls.dismissReview({
-        owner: pullRequest.owner,
-        repo: pullRequest.repo,
-        pull_number: pullRequest.number,
-        review_id: review.id,
-        message: "All actions resolved, you're good to go ✅",
-      });
-    }
-  }
-}
+//   for (const review of reviews.data) {
+//     if (
+//       isGitHubActionUser(review.user?.login) &&
+//       review.body?.includes(reviewPrefix) &&
+//       alreadyRequiredChanges(review.state)
+//     ) {
+//       core.debug(`dismissing review: ${review.id}`);
+//       void githubClient.rest.pulls.dismissReview({
+//         owner: pullRequest.owner,
+//         repo: pullRequest.repo,
+//         pull_number: pullRequest.number,
+//         review_id: review.id,
+//         message: "All actions resolved, you're good to go ✅",
+//       });
+//     }
+//   }
+// }
 
-function isGitHubActionUser(login: string | undefined): boolean {
-  core.debug(`login: ${login}`);
-  return login === 'github-actions[bot]';
-}
+// function isGitHubActionUser(login: string | undefined): boolean {
+//   core.debug(`login: ${login}`);
+//   return login === 'github-actions[bot]';
+// }
 
-function alreadyRequiredChanges(state: string): boolean {
-  core.debug(`state: ${state}`);
-  return state === 'CHANGES_REQUESTED';
-}
+// function alreadyRequiredChanges(state: string): boolean {
+//   core.debug(`state: ${state}`);
+//   return state === 'CHANGES_REQUESTED';
+// }
 
 run();

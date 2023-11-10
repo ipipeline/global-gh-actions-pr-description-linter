@@ -47,7 +47,7 @@ const whiteListedAuthorsPattern = core.getInput('whitelisted-authors-pattern', {
     required: false,
 });
 const githubClient = github.getOctokit(repoTokenInput);
-const reviewPrefix = '## PR Review';
+// const reviewPrefix = '## PR Review';
 const commentPrefix = '## PR Check';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -80,7 +80,7 @@ function run() {
                     core.debug(`created comment URL: ${response.data.html_url}`);
                     core.setOutput(`comment-url`, response.data.html_url);
                     core.setOutput(`responseMessage`, responseMessage);
-                    yield dismissReview(issue);
+                    //await dismissReview(issue);
                     return;
                 }
             }
@@ -89,16 +89,19 @@ function run() {
             const result = yield prBodyValidationService.validateBody(pr.body);
             // Create a comment on PR
             if (result.isPrBodyComplete) {
-                const response = yield createOrUpdateComment(result.message, issue);
+                const successMessage = `✅ All checks passed: ${result.message}`;
+                const response = yield createOrUpdateComment(successMessage, issue);
                 core.debug(`comment URL: ${response.data.html_url}`);
                 core.setOutput(`comment-url`, response.data.html_url);
-                core.setOutput(`responseMessage`, `✅ All checks passed: ${result.message}`);
-                yield dismissReview(issue);
+                core.setOutput(`responseMessage`, successMessage);
+                // await dismissReview(issue);
             }
             else {
                 const failedMessage = `🚧 PR Description incomplete: ${result.message}`;
+                const response = yield createOrUpdateComment(failedMessage, issue);
+                core.debug(`comment URL: ${response.data.html_url}`);
+                core.setOutput(`comment-url`, response.data.html_url);
                 core.setOutput(`responseMessage`, failedMessage);
-                yield createOrUpdateReview(result.message, issue);
                 core.setFailed(failedMessage);
                 return;
             }
@@ -115,45 +118,46 @@ function run() {
         }
     });
 }
-function createOrUpdateReview(comment, pullRequest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const reviews = yield githubClient.rest.pulls.listReviews({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            pull_number: pullRequest.number,
-        });
-        core.debug(`reviews.length: ${reviews.data.length}`);
-        const existingReview = reviews.data.find((review) => {
-            var _a, _b, _c;
-            core.debug(`review.body: ${review.body}`);
-            core.debug(`review.user: ${(_a = review.user) === null || _a === void 0 ? void 0 : _a.login}`);
-            return (((_b = review.user) === null || _b === void 0 ? void 0 : _b.login) === 'github-actions[bot]' &&
-                ((_c = review.body) === null || _c === void 0 ? void 0 : _c.includes(reviewPrefix)));
-        });
-        if (existingReview) {
-            core.debug(`updating review`);
-            void githubClient.rest.pulls.updateReview({
-                owner: pullRequest.owner,
-                repo: pullRequest.repo,
-                pull_number: pullRequest.number,
-                review_id: existingReview.id,
-                body: `${reviewPrefix}
-${comment}`,
-            });
-        }
-        else {
-            core.debug(`creating review`);
-            void githubClient.rest.pulls.createReview({
-                owner: pullRequest.owner,
-                repo: pullRequest.repo,
-                pull_number: pullRequest.number,
-                body: `${reviewPrefix}
-${comment}`,
-                event: 'REQUEST_CHANGES', // Could use "COMMENT"
-            });
-        }
-    });
-}
+// async function createOrUpdateReview(
+//   comment: string,
+//   pullRequest: { owner: string; repo: string; number: number },
+// ): Promise<void> {
+//   const reviews = await githubClient.rest.pulls.listReviews({
+//     owner: github.context.repo.owner,
+//     repo: github.context.repo.repo,
+//     pull_number: pullRequest.number,
+//   });
+//   core.debug(`reviews.length: ${reviews.data.length}`);
+//   const existingReview = reviews.data.find((review) => {
+//     core.debug(`review.body: ${review.body}`);
+//     core.debug(`review.user: ${review.user?.login}`);
+//     return (
+//       review.user?.login === 'github-actions[bot]' &&
+//       review.body?.includes(reviewPrefix)
+//     );
+//   });
+//   if (existingReview) {
+//     core.debug(`updating review`);
+//     void githubClient.rest.pulls.updateReview({
+//       owner: pullRequest.owner,
+//       repo: pullRequest.repo,
+//       pull_number: pullRequest.number,
+//       review_id: existingReview.id,
+//       body: `${reviewPrefix}
+// ${comment}`,
+//     });
+//   } else {
+//     core.debug(`creating review`);
+//     void githubClient.rest.pulls.createReview({
+//       owner: pullRequest.owner,
+//       repo: pullRequest.repo,
+//       pull_number: pullRequest.number,
+//       body: `${reviewPrefix}
+// ${comment}`,
+//       event: 'REQUEST_CHANGES', // Could use "COMMENT"
+//     });
+//   }
+// }
 function createOrUpdateComment(comment, pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         const comments = yield githubClient.rest.issues.listComments({
@@ -192,39 +196,42 @@ ${comment}`,
         }
     });
 }
-function dismissReview(pullRequest) {
-    var _a, _b;
-    return __awaiter(this, void 0, void 0, function* () {
-        const reviews = yield githubClient.rest.pulls.listReviews({
-            owner: pullRequest.owner,
-            repo: pullRequest.repo,
-            pull_number: pullRequest.number,
-        });
-        core.debug(`found: ${reviews.data.length} reviews`);
-        for (const review of reviews.data) {
-            if (isGitHubActionUser((_a = review.user) === null || _a === void 0 ? void 0 : _a.login)
-                && ((_b = review.body) === null || _b === void 0 ? void 0 : _b.includes(reviewPrefix))
-                && alreadyRequiredChanges(review.state)) {
-                core.debug(`dismissing review: ${review.id}`);
-                void githubClient.rest.pulls.dismissReview({
-                    owner: pullRequest.owner,
-                    repo: pullRequest.repo,
-                    pull_number: pullRequest.number,
-                    review_id: review.id,
-                    message: "All actions resolved, you're good to go ✅",
-                });
-            }
-        }
-    });
-}
-function isGitHubActionUser(login) {
-    core.debug(`login: ${login}`);
-    return login === 'github-actions[bot]';
-}
-function alreadyRequiredChanges(state) {
-    core.debug(`state: ${state}`);
-    return state === 'CHANGES_REQUESTED';
-}
+// async function dismissReview(pullRequest: {
+//   owner: string;
+//   repo: string;
+//   number: number;
+// }): Promise<void> {
+//   const reviews = await githubClient.rest.pulls.listReviews({
+//     owner: pullRequest.owner,
+//     repo: pullRequest.repo,
+//     pull_number: pullRequest.number,
+//   });
+//   core.debug(`found: ${reviews.data.length} reviews`);
+//   for (const review of reviews.data) {
+//     if (
+//       isGitHubActionUser(review.user?.login) &&
+//       review.body?.includes(reviewPrefix) &&
+//       alreadyRequiredChanges(review.state)
+//     ) {
+//       core.debug(`dismissing review: ${review.id}`);
+//       void githubClient.rest.pulls.dismissReview({
+//         owner: pullRequest.owner,
+//         repo: pullRequest.repo,
+//         pull_number: pullRequest.number,
+//         review_id: review.id,
+//         message: "All actions resolved, you're good to go ✅",
+//       });
+//     }
+//   }
+// }
+// function isGitHubActionUser(login: string | undefined): boolean {
+//   core.debug(`login: ${login}`);
+//   return login === 'github-actions[bot]';
+// }
+// function alreadyRequiredChanges(state: string): boolean {
+//   core.debug(`state: ${state}`);
+//   return state === 'CHANGES_REQUESTED';
+// }
 run();
 
 
@@ -319,8 +326,8 @@ class PrBodyValidationService {
                 }
                 resolve({
                     isPrBodyComplete: true,
-                    message: `Nice work 👍👍👍
-The PR Description has passed all of the validation checks ✅✅✅.
+                    message: `Nice work 👍
+The PR Description has passed all validation checks.
 The code can now be merged!
 `,
                 });
