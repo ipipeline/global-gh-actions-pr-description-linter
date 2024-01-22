@@ -51,7 +51,7 @@ export class PrBodyValidationService {
 
       const isFinalChecklistComplete = this.completedFinalChecklist.every(
         function (item) {
-          return prBody.includes(item);
+          return prBody.toLowerCase().includes(item.toLowerCase());
         },
       );
 

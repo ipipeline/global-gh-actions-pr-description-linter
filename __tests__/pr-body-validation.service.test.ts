@@ -40,6 +40,14 @@ This changes X, Y, Z
 - [x] **Author(s):** I have reviewed the Code Safety Guidelines
 `;
 
+const prBodyCompleteUppercaseX: string = `# Summary
+**Describe the changes:**
+This changes X, Y, Z
+
+# Sign off
+- [X] **Author(s):** I have reviewed the Code Safety Guidelines
+`;
+
 var testCases = [
   {
     title: 'A PR Description that is NULL should fail and return: ',
@@ -77,6 +85,13 @@ var testCases = [
       'A PR Description without placeholders that is signed off should pass and return: ',
     expectedMessagePrefix: 'Nice work',
     body: prBodyComplete,
+    isPrBodyCompleteExpected: true,
+  },
+  {
+    title:
+      'A PR Description without placeholders that is signed off with a capital X should pass and return: ',
+    expectedMessagePrefix: 'Nice work',
+    body: prBodyCompleteUppercaseX,
     isPrBodyCompleteExpected: true,
   },
 ];
