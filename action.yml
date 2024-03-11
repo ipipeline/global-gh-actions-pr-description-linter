@@ -8,5 +8,5 @@ inputs:
     required: false
     description: 'Will skip checks for authors matching this regular expression pattern'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
